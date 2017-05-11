@@ -153,6 +153,8 @@ void AdsbExchangeClient::value(String value) {
     heading[TEMP] = value.toFloat();
   } else if (currentKey == "Alt") {
     altitude[TEMP] = value;
+  } else if (currentKey == "Spd") {
+    spd[TEMP] = value.toFloat();
   } else if (currentKey == "Trt") {
     if (distance[TEMP] < currentMinDistance) {
       currentMinDistance = distance[TEMP];
@@ -163,8 +165,18 @@ void AdsbExchangeClient::value(String value) {
       aircraftType[CURRENT] = aircraftType[TEMP];
       operatorCode[CURRENT] = operatorCode[TEMP];
       heading[CURRENT] = heading[TEMP];
-      Serial.print("Found a closer aircraft: ");
-      Serial.println(aircraftType[CURRENT] + " from " + from[CURRENT] + " to " + to[CURRENT]);
+      Serial.print(F("Aircraft: "));
+      Serial.println(aircraftType[CURRENT]);
+      Serial.print(F(" From: "));
+      Serial.println(from[CURRENT]);
+      Serial.print(F(" To: "));
+      Serial.println(from[CURRENT]);
+      Serial.print(F(" Altitude: "));
+      Serial.println(altitude[CURRENT]);
+      Serial.print(F(" Distance: "));
+      Serial.println(distance[CURRENT]);
+      Serial.print(F(" Speed: "));
+      Serial.println(spd[CURRENT]);
     }
   }
   //Serial.println(currentKey + "=" + value);
@@ -193,6 +205,7 @@ void AdsbExchangeClient::endDocument() {
       aircraftType[i] = "";
       operatorCode[i] = "";
       heading[i] = 0.0;
+      spd[i] = 0;
     }
   } else if (counter > 0) {
     lastSightingMillis = millis();

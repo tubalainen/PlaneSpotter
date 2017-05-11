@@ -48,6 +48,7 @@ class AdsbExchangeClient: public JsonListener {
     String aircraftType[2] = {"", ""};
     String operatorCode[2] = {"", ""};
     double heading[2] = {0.0, 0.0};
+    double spd[2] = {0.0, 0.0};
     long lastSightingMillis = 0;
 
   public:
