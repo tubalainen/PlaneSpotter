@@ -170,7 +170,7 @@ void AdsbExchangeClient::value(String value) {
       Serial.print(F(" From: "));
       Serial.println(from[CURRENT]);
       Serial.print(F(" To: "));
-      Serial.println(from[CURRENT]);
+      Serial.println(to[CURRENT]);
       Serial.print(F(" Altitude: "));
       Serial.println(altitude[CURRENT]);
       Serial.print(F(" Distance: "));
