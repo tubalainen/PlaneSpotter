@@ -63,7 +63,7 @@ long lastUpdate = 0;
 // Check http://www.virtualradarserver.co.uk/Documentation/Formats/AircraftList.aspx
 // to craft this query to your needs
 //const String QUERY_STRING = "lat=44.46046467221&lng=26.13403117737&fDstL=0&fDstU=50&fAltL=0&fAltU=35000";
-const String QUERY_STRING = "fDstL=0&fDstU=20&fAltL=0&fAltU=35000";
+const String QUERY_STRING = "fDstL=0&fDstU=20&fAltL=1000&fAltU=35000";
 
 const int UTC_OFFSET = 2;
 
