@@ -8,13 +8,13 @@ AdsbExchangeClient::AdsbExchangeClient() {
 void AdsbExchangeClient::updateVisibleAircraft(String searchQuery) {
   JsonStreamingParser parser;
   parser.setListener(this);
-  WiFiClient client;
+  WiFiClientSecure client;
 
   // http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json?lat=47.437691&lng=8.568854&fDstL=0&fDstU=20&fAltL=0&fAltU=5000
   const char host[] = "public-api.adsbexchange.com";
   String url = "/VirtualRadar/AircraftList.json?" + searchQuery;
 
-  const int httpPort = 80;
+  const int httpPort = 443;
   if (!client.connect(host, httpPort)) {
     Serial.println("connection failed");
     return;
@@ -30,7 +30,7 @@ void AdsbExchangeClient::updateVisibleAircraft(String searchQuery) {
                "Connection: close\r\n\r\n");
 
   int retryCounter = 0;
-  while(!client.available()) {
+  while (!client.available()) {
     Serial.println(".");
     delay(1000);
     retryCounter++;
@@ -45,8 +45,8 @@ void AdsbExchangeClient::updateVisibleAircraft(String searchQuery) {
 
   int size = 0;
   client.setNoDelay(false);
-  while(client.connected()) {
-    while((size = client.available()) > 0) {
+  while (client.connected()) {
+    while ((size = client.available()) > 0) {
       c = client.read();
       if (c == '{' || c == '[') {
         isBody = true;
@@ -60,33 +60,33 @@ void AdsbExchangeClient::updateVisibleAircraft(String searchQuery) {
 }
 
 String AdsbExchangeClient::getFrom() {
-  if (from[CURRENT].length() >=4) {
-      int firstComma = from[CURRENT].indexOf(",");
-      return from[CURRENT].substring(5, firstComma);
+  if (from[CURRENT].length() >= 4) {
+    int firstComma = from[CURRENT].indexOf(",");
+    return from[CURRENT].substring(5, firstComma);
   }
   return "";
 }
 String AdsbExchangeClient::getFromIcao() {
-  if (from[CURRENT].length() >=4) {
-      return from[CURRENT].substring(0,4);
+  if (from[CURRENT].length() >= 4) {
+    return from[CURRENT].substring(0, 4);
   }
   return "";
 }
 String AdsbExchangeClient::getTo() {
-  if (to[CURRENT].length() >=4) {
-      int firstComma = to[CURRENT].indexOf(",");
-      return to[CURRENT].substring(5, firstComma);
+  if (to[CURRENT].length() >= 4) {
+    int firstComma = to[CURRENT].indexOf(",");
+    return to[CURRENT].substring(5, firstComma);
   }
   return "";
 }
 
 String AdsbExchangeClient::getToIcao() {
-  if (to[CURRENT].length() >=4) {
-      return to[CURRENT].substring(0,4);
+  if (to[CURRENT].length() >= 4) {
+    return to[CURRENT].substring(0, 4);
   }
   return "";
 }
-String AdsbExchangeClient::getAltitude(){
+String AdsbExchangeClient::getAltitude() {
   return altitude[CURRENT];
 }
 double AdsbExchangeClient::getDistance() {
@@ -120,23 +120,23 @@ void AdsbExchangeClient::key(String key) {
 
 void AdsbExchangeClient::value(String value) {
   /*String from = "";
-  String to = "";
-  String altitude = "";
-  String aircraftType = "";
-  String currentKey = "";
-  String operator = "";
+    String to = "";
+    String altitude = "";
+    String aircraftType = "";
+    String currentKey = "";
+    String operator = "";
 
 
- "Type": "A319",
- "Mdl": "Airbus A319 112",
+    "Type": "A319",
+    "Mdl": "Airbus A319 112",
 
- "From": "LSZH Z\u00c3\u00bcrich, Zurich, Switzerland",
- "To": "LEMD Madrid Barajas, Spain",
- "Op": "Swiss International Air Lines",
- "OpIcao": "SWR",
- "Dst": 6.23,
- "Year": "1996"
- */
+    "From": "LSZH Z\u00c3\u00bcrich, Zurich, Switzerland",
+    "To": "LEMD Madrid Barajas, Spain",
+    "Op": "Swiss International Air Lines",
+    "OpIcao": "SWR",
+    "Dst": 6.23,
+    "Year": "1996"
+  */
   if (currentKey == "Id") {
     counter++;
   } else if (currentKey == "From") {
@@ -156,7 +156,6 @@ void AdsbExchangeClient::value(String value) {
   } else if (currentKey == "Trt") {
     if (distance[TEMP] < currentMinDistance) {
       currentMinDistance = distance[TEMP];
-      Serial.println("Found a closer aircraft");
       from[CURRENT] = from[TEMP];
       to[CURRENT] = to[TEMP];
       altitude[CURRENT] = altitude[TEMP];
@@ -164,9 +163,11 @@ void AdsbExchangeClient::value(String value) {
       aircraftType[CURRENT] = aircraftType[TEMP];
       operatorCode[CURRENT] = operatorCode[TEMP];
       heading[CURRENT] = heading[TEMP];
+      Serial.print("Found a closer aircraft: ");
+      Serial.println(aircraftType[CURRENT] + " from " + from[CURRENT] + " to " + to[CURRENT]);
     }
   }
-  Serial.println(currentKey + "=" + value);
+  //Serial.println(currentKey + "=" + value);
 }
 
 int AdsbExchangeClient::getNumberOfVisibleAircrafts() {

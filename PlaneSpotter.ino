@@ -1,26 +1,26 @@
 /**The MIT License (MIT)
 
-Copyright (c) 2016 by Daniel Eichhorn
+  Copyright (c) 2016 by Daniel Eichhorn
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
 
-See more at http://blog.squix.ch
+  See more at http://blog.squix.ch
 */
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -39,12 +39,14 @@ See more at http://blog.squix.ch
 #include "Wire.h"
 #include "images.h"
 
-#include "TimeClient.h"
+//#include "TimeClient.h"
 #include "AdsbExchangeClient.h"
+
+#include "WifiLocator.h"
 
 
 /***************************
- * Begin Settings
+   Begin Settings
  **************************/
 // Please read http://blog.squix.org/weatherstation-getting-code-adapting-it
 // for setup instructions
@@ -60,7 +62,8 @@ long lastUpdate = 0;
 
 // Check http://www.virtualradarserver.co.uk/Documentation/Formats/AircraftList.aspx
 // to craft this query to your needs
-const String QUERY_STRING = "lat=47.424341887&lng=8.568778038&fDstL=0&fDstU=10&fAltL=0&fAltL=1500&fAltU=10000";
+//const String QUERY_STRING = "lat=44.46046467221&lng=26.13403117737&fDstL=0&fDstU=50&fAltL=0&fAltU=35000";
+const String QUERY_STRING = "fDstL=0&fDstU=20&fAltL=0&fAltU=35000";
 
 const int UTC_OFFSET = 2;
 
@@ -77,11 +80,13 @@ SSD1306Wire     display(I2C_DISPLAY_ADDRESS, SDA_PIN, SDC_PIN);
 //SH1106Wire      display(I2C_DISPLAY_ADDRESS, SDA_PIN, SDC_PIN);
 OLEDDisplayUi   ui( &display );
 
+WifiLocator locator;
+
 /***************************
- * End Settings
+   End Settings
  **************************/
 
-TimeClient timeClient(UTC_OFFSET);
+//TimeClient timeClient(UTC_OFFSET);
 
 AdsbExchangeClient adsbClient;
 
@@ -115,7 +120,7 @@ OverlayCallback overlays[] = { drawHeaderOverlay };
 int numberOfOverlays = 1;
 
 void setup() {
-    // Turn On VCC
+  // Turn On VCC
   pinMode(D4, OUTPUT);
   digitalWrite(D4, HIGH);
   Serial.begin(115200);
@@ -145,6 +150,14 @@ void setup() {
   String hostname(HOSTNAME);
   hostname += String(ESP.getChipId(), HEX);
   WiFi.hostname(hostname);
+
+  // Set center of the map by using a WiFi fingerprint
+  // Hardcode the values if it doesn't work or you want another location
+  locator.updateLocation();
+  //mapCenter.lat = locator.getLat().toFloat();
+  //mapCenter.lon = locator.getLon().toFloat();
+  //mapCenter.lat = 44.46046467221;
+  //mapCenter.lon = 26.13403117737;
 
 
   int counter = 0;
@@ -253,7 +266,9 @@ void drawOtaProgress(unsigned int progress, unsigned int total) {
 
 void updateData(OLEDDisplay *display) {
   readyForUpdate = false;
-  adsbClient.updateVisibleAircraft(QUERY_STRING);
+  //adsbClient.updateVisibleAircraft(QUERY_STRING);
+  Serial.println("Heap: " + String(ESP.getFreeHeap()));
+  adsbClient.updateVisibleAircraft(QUERY_STRING + "&lat=" + String(locator.getLat().toFloat() , 6) + "&lng=" + String(locator.getLon().toFloat() , 6));
   lastUpdate = millis();
 }
 
@@ -288,12 +303,12 @@ void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state) {
 // converts the dBm to a range between 0 and 100%
 int8_t getWifiQuality() {
   int32_t dbm = WiFi.RSSI();
-  if(dbm <= -100) {
-      return 0;
-  } else if(dbm >= -50) {
-      return 100;
+  if (dbm <= -100) {
+    return 0;
+  } else if (dbm >= -50) {
+    return 100;
   } else {
-      return 2 * (dbm + 100);
+    return 2 * (dbm + 100);
   }
 }
 
@@ -341,6 +356,6 @@ void drawHeading(OLEDDisplay *display, int x, int y, double heading) {
 void checkReadyForUpdate() {
   // Only do light work in ticker callback
   if (lastUpdate < millis() - currentUpdateInterval * 1000) {
-      readyForUpdate = true;
+    readyForUpdate = true;
   }
 }
