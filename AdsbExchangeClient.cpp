@@ -10,7 +10,7 @@ void AdsbExchangeClient::updateVisibleAircraft(String searchQuery) {
   parser.setListener(this);
   WiFiClientSecure client;
 
-  // http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json?lat=47.437691&lng=8.568854&fDstL=0&fDstU=20&fAltL=0&fAltU=5000
+	// http://public-api.adsbexchange.com/VirtualRadar/AircraftList.json?lat=47.437691&lng=8.568854&fDstL=0&fDstU=20&fAltL=0&fAltU=5000
   const char host[] = "public-api.adsbexchange.com";
   String url = "/VirtualRadar/AircraftList.json?" + searchQuery;
 
@@ -105,6 +105,10 @@ double AdsbExchangeClient::getHeading() {
   return heading[CURRENT];
 }
 
+double AdsbExchangeClient::getSpd() {
+  return spd[CURRENT];
+}
+
 void AdsbExchangeClient::whitespace(char c) {
 
 }
@@ -143,7 +147,9 @@ void AdsbExchangeClient::value(String value) {
     from[TEMP] = value;
   } else if (currentKey == "To") {
     to[TEMP] = value;
-  } else if (currentKey == "OpIcao") {
+//  } else if (currentKey == "OpIcao") {
+//    operatorCode[TEMP] = value;
+  } else if (currentKey == "Op") {
     operatorCode[TEMP] = value;
   } else if (currentKey == "Dst") {
     distance[TEMP] = value.toFloat();
@@ -165,8 +171,11 @@ void AdsbExchangeClient::value(String value) {
       aircraftType[CURRENT] = aircraftType[TEMP];
       operatorCode[CURRENT] = operatorCode[TEMP];
       heading[CURRENT] = heading[TEMP];
-      Serial.print(F("Aircraft: "));
+      spd[CURRENT] = spd[TEMP];
+	  Serial.print(F(" Aircraft: "));
       Serial.println(aircraftType[CURRENT]);
+      Serial.print(F(" Op: "));
+      Serial.println(operatorCode[CURRENT]);
       Serial.print(F(" From: "));
       Serial.println(from[CURRENT]);
       Serial.print(F(" To: "));

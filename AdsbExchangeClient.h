@@ -65,6 +65,7 @@ class AdsbExchangeClient: public JsonListener {
     String getAircraftType();
     String getOperatorCode();
     double getHeading();
+    double getSpd();
     int getNumberOfVisibleAircrafts();
     boolean isAircraftVisible();
 

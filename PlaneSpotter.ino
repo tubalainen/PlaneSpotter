@@ -51,7 +51,7 @@
 // Please read http://blog.squix.org/weatherstation-getting-code-adapting-it
 // for setup instructions
 
-#define HOSTNAME "ESP8266-OTA-"
+#define HOSTNAME "Planespotter"
 
 // Setup
 const int UPDATE_INTERVAL_SECS_LONG = 15; // Update every 15 seconds if no airplanes around
@@ -62,10 +62,9 @@ long lastUpdate = 0;
 
 // Check http://www.virtualradarserver.co.uk/Documentation/Formats/AircraftList.aspx
 // to craft this query to your needs
-//const String QUERY_STRING = "lat=44.46046467221&lng=26.13403117737&fDstL=0&fDstU=50&fAltL=0&fAltU=35000";
-const String QUERY_STRING = "fDstL=0&fDstU=20&fAltL=1000&fAltU=35000";
+const String QUERY_STRING = "fDstL=0&fDstU=200&fAltL=1000&fAltU=35000";
 
-const int UTC_OFFSET = 2;
+const int UTC_OFFSET = 1;
 
 const float pi = 3.141;
 
@@ -103,6 +102,7 @@ void updateData(OLEDDisplay *display);
 void drawCurrentAirplane1(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawCurrentAirplane2(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawCurrentAirplane3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
+void drawCurrentAirplane4(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y);
 void drawHeaderOverlay(OLEDDisplay *display, OLEDDisplayUiState* state);
 void drawTextAsBigAsPossible(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y, String text, int maxWidth);
 void drawHeading(OLEDDisplay *display, int x, int y, double heading);
@@ -113,8 +113,8 @@ int8_t getWifiQuality();
 // Add frames
 // this array keeps function pointers to all frames
 // frames are the single views that slide from right to left
-FrameCallback frames[] = { drawCurrentAirplane1, drawCurrentAirplane2, drawCurrentAirplane3 };
-int numberOfFrames = 3;
+FrameCallback frames[] = { drawCurrentAirplane1, drawCurrentAirplane2, drawCurrentAirplane3, drawCurrentAirplane4 };
+int numberOfFrames = 4;
 
 OverlayCallback overlays[] = { drawHeaderOverlay };
 int numberOfOverlays = 1;
@@ -317,7 +317,7 @@ void drawCurrentAirplane1(OLEDDisplay *display, OLEDDisplayUiState* state, int16
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->setFont(ArialMT_Plain_10);
 
-    display->drawString(0 + x, 0 + y, "From: " + adsbClient.getFrom());
+    display->drawString(0 + x, 0 + y, "Op: " + adsbClient.getOperatorCode());
   }
 }
 
@@ -326,11 +326,20 @@ void drawCurrentAirplane2(OLEDDisplay *display, OLEDDisplayUiState* state, int16
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->setFont(ArialMT_Plain_10);
 
-    display->drawString(0 + x, 0 + y, "To: " + adsbClient.getTo());
+    display->drawString(0 + x, 0 + y, "From: " + adsbClient.getFrom());
   }
 }
 
 void drawCurrentAirplane3(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
+  if (adsbClient.isAircraftVisible()) {
+    display->setTextAlignment(TEXT_ALIGN_LEFT);
+    display->setFont(ArialMT_Plain_10);
+
+    display->drawString(0 + x, 0 + y, "To: " + adsbClient.getTo());
+  }
+}
+
+void drawCurrentAirplane4(OLEDDisplay *display, OLEDDisplayUiState* state, int16_t x, int16_t y) {
   if (adsbClient.isAircraftVisible()) {
     display->setTextAlignment(TEXT_ALIGN_LEFT);
     display->setFont(ArialMT_Plain_10);
