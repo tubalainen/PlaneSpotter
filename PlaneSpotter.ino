@@ -33,8 +33,8 @@
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>
 
-#include "SSD1306Wire.h"
-//#include "SH1106Wire.h"
+//#include "SSD1306Wire.h"
+#include "SH1106Wire.h"
 #include "OLEDDisplayUi.h"
 #include "Wire.h"
 #include "images.h"
@@ -62,7 +62,7 @@ long lastUpdate = 0;
 
 // Check http://www.virtualradarserver.co.uk/Documentation/Formats/AircraftList.aspx
 // to craft this query to your needs
-const String QUERY_STRING = "fDstL=0&fDstU=200&fAltL=1000&fAltU=35000";
+const String QUERY_STRING = "fDstL=0&fDstU=100&fAltL=0&fAltU=45000";
 
 const int UTC_OFFSET = 1;
 
@@ -75,8 +75,8 @@ const int SDC_PIN = D3;
 
 // Initialize the oled display for address 0x3c
 // sda-pin=14 and sdc-pin=12
-SSD1306Wire     display(I2C_DISPLAY_ADDRESS, SDA_PIN, SDC_PIN);
-//SH1106Wire      display(I2C_DISPLAY_ADDRESS, SDA_PIN, SDC_PIN);
+//SSD1306Wire     display(I2C_DISPLAY_ADDRESS, SDA_PIN, SDC_PIN);
+SH1106Wire      display(I2C_DISPLAY_ADDRESS, SDA_PIN, SDC_PIN);
 OLEDDisplayUi   ui( &display );
 
 WifiLocator locator;
